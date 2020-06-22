@@ -1,0 +1,6 @@
+[client]
+database = 'ecomstore'
+host = 'localhost'
+user = 'iandba'
+password = 'toor'
+default-character-set = 'utf8'

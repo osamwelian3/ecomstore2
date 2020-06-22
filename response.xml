@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<createTransactionResponse xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="AnetApi/xml/v1/schema/AnetApiSchema.xsd">
+	<messages>
+		<resultCode>Error</resultCode>
+		<message>
+			<code>E00027</code>
+			<text>The transaction was unsuccessful.</text>
+		</message>
+	</messages>
+<transactionResponse>
+	<responseCode>3</responseCode>
+	<authCode />
+	<avsResultCode>P</avsResultCode>
+	<cvvResultCode />
+	<cavvResultCode />
+	<transId>0</transId>
+	<refTransID />
+	<transHash />
+	<testRequest>0</testRequest>
+	<accountNumber>XXXX0015</accountNumber>
+	<accountType />
+	<errors>
+		<error>
+			<errorCode>6</errorCode>
+			<errorText>The credit card number is invalid.</errorText>
+		</error>
+	</errors>
+	<transHashSha2 />
+</transactionResponse>
+</createTransactionResponse>

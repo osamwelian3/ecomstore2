@@ -1,0 +1,30 @@
+﻿<createTransactionResponse xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns="AnetApi/xml/v1/schema/AnetApiSchema.xsd">
+	<messages>
+		<resultCode>Network</resultCode>
+		<message>
+			<code>XXXXX</code>
+			<text>Unsuccessful</text>
+		</message>
+	</messages>
+	<transactionResponse>
+		<responseCode>5</responseCode>
+		<authCode>11BUCI</authCode>
+		<avsResultCode>Y</avsResultCode>
+		<cvvResultCode>P</cvvResultCode>
+		<cavvResultCode>2</cavvResultCode>
+		<transId />
+		<refTransID />
+		<transHash />
+		<testRequest>0</testRequest>
+		<accountNumber>XXXX</accountNumber>
+		<accountType>XXX</accountType>
+		<messages>
+			<message>
+				<code>5</code>
+				<description>Transaction didnt go through. Could not reach card verification servers. We are sorry for any inconvenience caused. Try Lipa na Mpesa Option.</description>
+			</message>
+		</messages>
+		<transHashSha2 />
+		<networkTransId>DU5JP8UP4VKKSOBU63G4UFU</networkTransId>
+	</transactionResponse>
+</createTransactionResponse>
