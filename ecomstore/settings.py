@@ -12,11 +12,10 @@ https://docs.djangoproject.com/en/2.1/ref/settings/
 
 import os
 
-SSL_ON = True
-
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
+SSL_ON = True
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/2.1/howto/deployment/checklist/
@@ -45,10 +44,9 @@ INSTALLED_APPS = [
     'cart',
     'checkout',
     'mpesa_api',
+    'accounts',
     'django.contrib.flatpages',
     'django.contrib.sites',
-    'sslserver',
-    'django_tools',
 ]
 
 SITE_ID = 1
@@ -93,9 +91,15 @@ WSGI_APPLICATION = 'ecomstore.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'ezi$ecomstore',
+        'USER': 'ezi',
+        'PASSWORD': 'ecomstore',
+        'HOST': 'ezi.mysql.pythonanywhere-services.com',
+        'PORT': '3306',
         'OPTIONS': {
-            'read_default_file': os.path.join(BASE_DIR, 'ecomysql.cnf'),
-        },
+            # "init_command": "SET foreign_key_checks = 0;",
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+        }
     }
 }
 
@@ -119,6 +123,17 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+LOGIN_URL = '/myaccounts/login/'
+
+LOGIN_REDIRECT_URL = '/myaccounts/my_account/'
+
+LOGIN_REDIRECT_URL = '/'
+
+AUTH_PROFILE_MODULE = 'accounts.userprofile'
+
+SECURE_SSL_REDIRECT = True
 
 # Internationalization
 # https://docs.djangoproject.com/en/2.1/topics/i18n/
@@ -149,12 +164,12 @@ MEDIA_URL = '/static/media/'
 
 
 # Site template settings
-SITE_NAME = 'Modern Musician'
+SITE_NAME = 'EZINET MALL'
 
-META_KEYWORDS = 'Music, Instruments, Music Accessories, Musician Supplies'
+META_KEYWORDS = 'Food staff, Clothes, Electronics and so  much  more. '
 
-META_DESCRIPTION = 'Modern Musician is an online supplier of Instruments, sheet music and other accessories for' \
-                   ' musicians'
+META_DESCRIPTION = 'Ezinet mall is an online supplier of all your  shopping  needs' \
+                   ' '
 
 # AUTHORIZE.NET SETTINGS
 AUTHNET_POST_URL = 'https://apitest.authorize.net/xml/v1/request.api'
@@ -168,7 +183,7 @@ CONSUMER_KEY = '6VI5N8UfjQsbxnGf8GoJGvYidll2d8Wa'
 CONSUMER_SECRET = 'iJRGwnYRDQh9j6uw'
 OAUTH_API = 'https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials'
 PAYBILL_NO = "174379"
-c2bpaybill = 600344
+c2bpaybill = 600582
 pass_key = 'bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919'
 MPESA_URL = 'sandbox.safaricom.co.ke'
 stkpush_uri = '/mpesa/stkpush/v1/processrequest'

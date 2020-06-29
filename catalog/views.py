@@ -10,7 +10,7 @@ from django.views.decorators.csrf import csrf_exempt
 
 # Create your views here.
 def index(request, template_name="catalog/index.html"):
-    page_title = 'Musical Instruments and Sheet Music for Musicians'
+    page_title = 'Ezinet Mall'
     context = {
         'page_title': page_title,
     }

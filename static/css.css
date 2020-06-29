@@ -120,6 +120,24 @@ div.product_thumbnail{
 div.product_image{
     float:left;
     padding:0 10px 10px 0;
+    height:217px;
+    width:350px;
+}
+.product_image {
+    overflow: hidden;
+    background-size: cover;
+    background-position: center;
+}
+.pimage{
+    object-fit: contain;
+    height: 217px;
+    width: 350px;
+}
+.pright {
+    margin-left: 350px;
+    max-width: 350px;
+    padding-left: 20px;
+    word-wrap: break-word;
 }
 
 /* style for Django error messages */
@@ -130,9 +148,7 @@ background-color:Red;color:White;
     background-color:Red;
     color:White;
 }
-
 form.cart{
-    float:right;
 }
 
 .cs{
@@ -219,3 +235,24 @@ table#receipt{
     width:100%;
     border-collapse:collapse;
 }
+
+/* registration page */
+table#register{
+    width:100%;
+}
+table#register th, td{
+    vertical-align:top;
+}
+fieldset.my_account{
+    padding:10px;
+}
+fieldset.my_account legend{
+    font-weight:bold;
+}
+fieldset.my_account ul{
+    list-style:none;
+}
+fieldset.my_account ul li{
+    margin-bottom:5px;
+}
+

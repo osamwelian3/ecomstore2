@@ -4,10 +4,36 @@ from django.contrib.auth.models import User
 from catalog.models import Product
 from cart.models import CartItem
 import decimal
+from django.urls import reverse
 
 
 # Create your models here.
-class Order(models.Model):
+class BaseOrderInfo(models.Model):
+    class Meta:
+        abstract = True
+
+    # contact info
+    email = models.EmailField(max_length=50, null=True, blank=True)
+    phone = models.CharField(max_length=20)
+    # shipping information
+    shipping_name = models.CharField(max_length=50)
+    shipping_address_1 = models.CharField(max_length=50)
+    shipping_address_2 = models.CharField(max_length=50, blank=True)
+    shipping_city = models.CharField(max_length=50)
+    shipping_state = models.CharField(max_length=50, null=True, blank=True)
+    shipping_country = models.CharField(max_length=50)
+    shipping_zip = models.CharField(max_length=10)
+    # billing information
+    billing_name = models.CharField(max_length=50)
+    billing_address_1 = models.CharField(max_length=50)
+    billing_address_2 = models.CharField(max_length=50, blank=True)
+    billing_city = models.CharField(max_length=50)
+    billing_state = models.CharField(max_length=50, blank=True, null=True)
+    billing_country = models.CharField(max_length=50)
+    billing_zip = models.CharField(max_length=10)
+
+
+class Order(BaseOrderInfo):
     # each individual status
     SUBMITTED = 1
     PROCESSED = 2
@@ -25,25 +51,6 @@ class Order(models.Model):
     last_updated = models.DateTimeField(auto_now=True)
     user = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
     transaction_id = models.CharField(max_length=20)
-    # contact info
-    email = models.EmailField(max_length=50, null=True, blank=True)
-    phone = models.CharField(max_length=20)
-    # shipping information
-    shipping_name = models.CharField(max_length=50)
-    shipping_address_1 = models.CharField(max_length=50)
-    shipping_address_2 = models.CharField(max_length=50, blank=True)
-    shipping_city = models.CharField(max_length=50)
-    shipping_state = models.CharField(max_length=2)
-    shipping_country = models.CharField(max_length=50)
-    shipping_zip = models.CharField(max_length=10)
-    # billing information
-    billing_name = models.CharField(max_length=50)
-    billing_address_1 = models.CharField(max_length=50)
-    billing_address_2 = models.CharField(max_length=50, blank=True)
-    billing_city = models.CharField(max_length=50)
-    billing_state = models.CharField(max_length=2, blank=True, null=True)
-    billing_country = models.CharField(max_length=50)
-    billing_zip = models.CharField(max_length=10)
 
     def __str__(self):
         return 'Order #' + str(self.id)
@@ -55,6 +62,9 @@ class Order(models.Model):
         for item in order_items:
             total += item.total
         return total
+
+    def get_absolute_url(self):
+        return reverse('order_details', args=[str(self.id)])
 
 
 class OrderItem(models.Model):

@@ -8,6 +8,7 @@ from django.urls import reverse
 import urllib
 import xml
 from . import authnet_response
+from accounts import profile
 
 
 # returns the URL from the checkout module for cart
@@ -56,6 +57,8 @@ def create_order(request, transaction_id):
     order.transaction_id = transaction_id
     order.ip_address = request.META.get('REMOTE_ADDR')
     order.user = None
+    if request.user.is_authenticated:
+        order.user = request.user
     order.status = Order.SUBMITTED
     order.save()
     # if the order save succeeded
@@ -71,5 +74,8 @@ def create_order(request, transaction_id):
             oi.save()
         # all set, empty cart
         cart.empty_cart(request)
+        # save profile info for future orders
+        if request.user.is_authenticated:
+            profile.set(request)
     # return the new order object
     return order

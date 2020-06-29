@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from mpesa_api.models import MpesaPayment
 from .models import Order, OrderItem, PendingMpesa
 from .forms import MpesaCheckoutForm
+from accounts import profile
 
 
 def lipa_na_mpesa_online(request):
@@ -16,12 +17,15 @@ def lipa_na_mpesa_online(request):
     elif phone[0:4] == "+254":
         phone = phone.replace('+254', '254', 1)
     access_token = validated_mpesa_access_token()
+    print(access_token)
+    print("lipalipa")
     api_url = MpesaC2bCredential.MPESA_URL
     headers = {
         "Authorization": "Bearer %s" % access_token,
         'Content-Type': 'application/json'
     }
-    conn = http.client.HTTPSConnection(api_url)
+    conn = http.client.HTTPSConnection("proxy.server", 3128)
+    conn.set_tunnel(api_url)
     requestbody = "{\r\n        " \
                   "\"BusinessShortCode\": " + str(LipanaMpesaPpassword.Business_short_code) + ",\r\n        " \
                   "\"Password\": \"" + str(LipanaMpesaPpassword.decode_password) + "\",\r\n        " \
@@ -31,7 +35,7 @@ def lipa_na_mpesa_online(request):
                   "\"PartyA\": " + str(phone) + ",\r\n        " \
                   "\"PartyB\": " + str(LipanaMpesaPpassword.Business_short_code) + ",\r\n        " \
                   "\"PhoneNumber\": " + str(phone) + ",\r\n        " \
-                  "\"CallBackURL\": \"https://873e2d51dd67.ngrok.io/api/v1/c2b/confirmation/\",\r\n        " \
+                  "\"CallBackURL\": \"https://ezi.pythonanywhere.com/api/v1/c2b/callback/\",\r\n        " \
                   "\"AccountReference\": \"SAMIAN LTD\",\r\n        " \
                   "\"TransactionDesc\": \"Test\"\r\n    " \
                   "}"
@@ -64,7 +68,8 @@ def lipa_na_mpesa_online(request):
 def query_lipa(request, cri):
     access_token = validated_mpesa_access_token()
     api_url = MpesaC2bCredential.MPESA_URL
-    conn = http.client.HTTPSConnection(api_url)
+    conn = http.client.HTTPSConnection("proxy.server", 3128)
+    conn.set_tunnel(api_url)
     request1 = "{\r\n        " \
               "\"BusinessShortCode\": \"" + str(LipanaMpesaPpassword.Business_short_code) + "\",\r\n        " \
               "\"Password\": \"" + str(LipanaMpesaPpassword.decode_password) + "\",\r\n        " \
@@ -101,6 +106,8 @@ def query_lipa(request, cri):
         message = 0
     if values['ResultDesc'] == "System busy. The service request is rejected.":
         message = 26
+    if values['ResultDesc'] == "The balance is insufficient for the transaction":
+        message = 90
     print(request1)
     print(data)
     return message
@@ -113,12 +120,13 @@ def process(request):
     failed = 5
     busy = 26
     lockfail = 23
+    insufficient = 90
     results = {}
     response = ''
     try:
         message = lipa_na_mpesa_online(request)
     except Exception:
-        message = 4
+        message = 5
     if message == paid:
         transaction_id = "MPESA-" + str(Order.objects.all().count() + 1) + ""
         order = create_order(request, transaction_id)
@@ -136,6 +144,9 @@ def process(request):
     if message == lockfail:
         results = {"order_number": 0, 'message': "MPESA ERROR: Unable to lock subscriber,"
                                                  " a transaction is already in process for the current subscriber"}
+    if message == insufficient:
+        results = {"order_number": 0, 'message': "You do not have sufficient balance in your Mpesa to complete this"
+                                                 " transaction"}
     return results
 
 
@@ -153,6 +164,8 @@ def create_order(request, transaction_id):
     order.transaction_id = transaction_id
     order.ip_address = request.META.get('REMOTE_ADDR')
     order.user = None
+    if request.user.is_authenticated:
+        order.user = request.user
     order.status = Order.SUBMITTED
     order.save()
     # if the order save succeeded
@@ -168,5 +181,8 @@ def create_order(request, transaction_id):
             oi.save()
         # all set, empty cart
         cart.empty_cart(request)
+        # save profile info for future orders
+        if request.user.is_authenticated:
+            profile.set(request)
     # return the new order object
     return order

@@ -35,7 +35,8 @@ def lipa_na_mpesa_online(request):
         "Authorization": "Bearer %s" % access_token,
         'Content-Type': 'application/json'
     }
-    conn = http.client.HTTPSConnection(api_url)
+    conn = http.client.HTTPSConnection("proxy.server", 3128)
+    conn.set_tunnel(api_url)
     requestbody = "{\r\n        " \
                   "\"BusinessShortCode\": " + str(LipanaMpesaPpassword.Business_short_code) + ",\r\n        " \
                   "\"Password\": \"" + str(LipanaMpesaPpassword.decode_password) + "\",\r\n        " \
@@ -45,7 +46,7 @@ def lipa_na_mpesa_online(request):
                   "\"PartyA\": 254796525626,\r\n        " \
                   "\"PartyB\": " + str(LipanaMpesaPpassword.Business_short_code) + ",\r\n        " \
                   "\"PhoneNumber\": 254796525626,\r\n        " \
-                  "\"CallBackURL\": \"https://4b655c571beb.ngrok.io/api/v1/c2b/callback\",\r\n        " \
+                  "\"CallBackURL\": \"https://ezi.pythonanywhere.com/api/v1/c2b/callback/\",\r\n        " \
                   "\"AccountReference\": \"SAMIAN LTD\",\r\n        " \
                   "\"TransactionDesc\": \"Test\"\r\n    " \
                   "}"
@@ -70,7 +71,8 @@ def lipa_na_mpesa_online(request):
 def query_lipa(request, cri):
     access_token = validated_mpesa_access_token()
     api_url = MpesaC2bCredential.MPESA_URL
-    conn = http.client.HTTPSConnection(api_url)
+    conn = http.client.HTTPSConnection("proxy.server", 3128)
+    conn.set_tunnel(api_url)
     request1 = "{\r\n        " \
               "\"BusinessShortCode\": \"" + str(LipanaMpesaPpassword.Business_short_code) + "\",\r\n        " \
               "\"Password\": \"" + str(LipanaMpesaPpassword.decode_password) + "\",\r\n        " \
@@ -114,12 +116,13 @@ def query_lipa(request, cri):
 def register_urls(request):
     access_token = validated_mpesa_access_token()
     api_url = MpesaC2bCredential.MPESA_URL
-    conn = http.client.HTTPSConnection(api_url)
+    conn = http.client.HTTPSConnection("proxy.server", 3128)
+    conn.set_tunnel(api_url)
     payload = "{\r\n        " \
-              "\"ShortCode\": \"" + str(LipanaMpesaPpassword.Business_short_code) + "\",\r\n        " \
+              "\"ShortCode\": \"" + str(LipanaMpesaPpassword.Testc2b_short_code) + "\",\r\n        " \
               "\"ResponseType\": \"Completed\",\r\n        " \
-              "\"ConfirmationURL\": \"https://4b655c571beb.ngrok.io/api/v1/c2b/confirmation\",\r\n        " \
-              "\"ValidationURL\": \"https://4b655c571beb.ngrok.io/api/v1/c2b/validation\"\r\n        " \
+              "\"ConfirmationURL\": \"https://ezi.pythonanywhere.com/api/v1/c2b/confirmation/\",\r\n        " \
+              "\"ValidationURL\": \"https://ezi.pythonanywhere.com/api/v1/c2b/validation/\"\r\n        " \
               "}"
     headers = {
         'Authorization': 'Bearer %s' % access_token,
@@ -129,6 +132,7 @@ def register_urls(request):
     conn.request("POST", MpesaC2bCredential.register_uri, payload, headers)
     response = conn.getresponse()
     response_data = response.read()
+    print(response_data)
     data = response_data.decode('utf-8')
     print(data)
     values = json.loads(data)
@@ -138,18 +142,29 @@ def register_urls(request):
 @csrf_exempt
 def call_back(request):
     mpesa_body = request.body.decode('utf-8')
-    mpesa_payment = json.loads(mpesa_body)
-    print(mpesa_payment)
-    return HttpResponse(mpesa_payment)
+    try:
+        mpesa_payment = json.loads(mpesa_body)
+        print(mpesa_payment)
+        context = {
+            "ResultCode": 0,
+            "ResultDesc": "Accepted"
+        }
+    except Exception:
+        context = {
+            "ResultCode": 0,
+            "ResultDesc": "Accepted"
+        }
+    return JsonResponse(dict(context))
 
 
 @csrf_exempt
 def c2b(request):
     access_token = validated_mpesa_access_token()
     api_url = MpesaC2bCredential.MPESA_URL
-    conn = http.client.HTTPSConnection(api_url)
+    conn = http.client.HTTPSConnection("proxy.server", 3128)
+    conn.set_tunnel(api_url)
     request1 = "{\r\n        " \
-              "\"ShortCode\": \"" + str(LipanaMpesaPpassword.Business_short_code) + "\",\r\n        " \
+              "\"ShortCode\": \"" + str(LipanaMpesaPpassword.Testc2b_short_code) + "\",\r\n        " \
               "\"CommandID\": \"CustomerPayBillOnline\",\r\n        " \
               "\"Amount\": \"1\",\r\n        " \
               "\"Msisdn\": \"254708374149\",\r\n        " \
@@ -171,6 +186,7 @@ def c2b(request):
 
 @csrf_exempt
 def validation(request):
+    print("validation")
     print(request.body)
     context = {
         "ResultCode": 0,
@@ -181,24 +197,32 @@ def validation(request):
 
 @csrf_exempt
 def confirmation(request):
+    print("confirmation")
     print(request.body)
     mpesa_body = request.body.decode('utf-8')
-    mpesa_payment = json.loads(mpesa_body)
+    print(mpesa_body)
+    try:
+        mpesa_payment = json.loads(mpesa_body)
 
-    payment = MpesaPayment(
-        first_name=mpesa_payment['FirstName'],
-        last_name=mpesa_payment['LastName'],
-        middle_name=mpesa_payment['MiddleName'],
-        description=mpesa_payment['TransID'],
-        phone_number=mpesa_payment['MSISDN'],
-        amount=mpesa_payment['TransAmount'],
-        reference=mpesa_payment['BillRefNumber'],
-        organization_balance=mpesa_payment['OrgAccountBalance'],
-        type=mpesa_payment['TransactionType'],
-    )
-    payment.save()
-    context = {
-        "ResultCode": 0,
-        "ResultDesc": "Accepted"
-    }
+        payment = MpesaPayment(
+            first_name=mpesa_payment['FirstName'],
+            last_name=mpesa_payment['LastName'],
+            middle_name=mpesa_payment['MiddleName'],
+            description=mpesa_payment['TransID'],
+            phone_number=mpesa_payment['MSISDN'],
+            amount=mpesa_payment['TransAmount'],
+            reference=mpesa_payment['BillRefNumber'],
+            organization_balance=mpesa_payment['OrgAccountBalance'],
+            type=mpesa_payment['TransactionType'],
+        )
+        payment.save()
+        context = {
+            "ResultCode": 0,
+            "ResultDesc": "Accepted"
+        }
+    except Exception:
+        context = {
+            "ResultCode": 0,
+            "ResultDesc": "Accepted"
+        }
     return JsonResponse(dict(context))

@@ -9,18 +9,16 @@ from checkout.models import Order, OrderItem, PendingMpesa
 from checkout import checkout
 from cart import cart
 from . import mpesa_processor
-from django_tools.middlewares import ThreadLocal
-from threading import local
 from django.views.decorators.csrf import csrf_exempt
+from accounts import profile
 
 
 # Create your views here.
 @csrf_exempt
 def show_checkout(request, checkout_type, template_name="checkout/checkout.html"):
     print(request.GET.copy())
-    user = request.session['cart_id']
-    request1 = locals()
-    print(request1)
+    # request1 = locals()
+    # print(request1)
     print('ian')
     print(request)
     if cart.is_empty(request):
@@ -56,15 +54,19 @@ def show_checkout(request, checkout_type, template_name="checkout/checkout.html"
         else:
             error_message = 'Correct the errors below'
     else:
-        form = CheckoutForm()
+        if request.user.is_authenticated:
+            user_profile = profile.retrieve(request)
+            form = CheckoutForm(instance=user_profile)
+        else:
+            form = CheckoutForm()
     page_title = 'Checkout'
-    if request.method == 'POST':
+    if request.method == 'POST' and checkout_type == "Lipa":
         postdata = request.POST.copy()
         form = MpesaCheckoutForm(postdata)
     if request.GET and checkout_type == "Lipa":
         form = MpesaCheckoutForm()
     checkout_type = checkout_type
-    return render(request, template_name, locals(), RequestContext(request, dict_=request))
+    return render(request, template_name, locals(), RequestContext(request))
 
 
 def receipt(request, template_name='checkout/receipt.html'):
